@@ -71,8 +71,8 @@ public class Country {
      * @param surface A surface as a String.
      */
     public void addSurface(String surface) {
-        if(!surfaces.containsKey(surface))
-            surfaces.put(surface, Boolean.TRUE);
+        if(!surfaces.containsKey(surface.toUpperCase()))
+            surfaces.put(surface.toUpperCase(), Boolean.TRUE);
     }
     
     /**

@@ -93,7 +93,8 @@ public class LunatechTask {
         
         switch(num){
             case 1: Reports.printTop10CountriesWithMaxAndMinAirports(); break;
-            case 2: Reports.printTypeOfRunwaysPerCountry(); break;
+            //case 2: Reports.printTypeOfRunwaysPerCountryForLimitedSpace("Bulgaria"); break; - used for a specific country
+            case 2: Reports.printTypeOfRunwaysPerCountryForLimitedSpace(null); break;
             case 3: Reports.printTop10MostCommonElements(); break;
             default : break;
         }

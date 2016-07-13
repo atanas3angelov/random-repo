@@ -78,7 +78,7 @@ public class Query {
      * @param country The user input can be either a country name or country code.
      * @return Returns a country code based on user input.
      */
-    private static String findCountryCode(String country) {
+    protected static String findCountryCode(String country) {
         
         String country_code = null;
         
@@ -86,6 +86,7 @@ public class Query {
             
             String line; // pointer (line reader) used with the countries
             
+            countriesReader = new BufferedReader(new FileReader("resources/countries.csv"));
             countriesReader.readLine(); // skip first line (column names)
             
             while((line = countriesReader.readLine()) != null) {

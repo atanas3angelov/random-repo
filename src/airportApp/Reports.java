@@ -363,16 +363,208 @@ public class Reports {
            Map.Entry<String, Country> entry = (Map.Entry) it.next();
            Country c = entry.getValue();
            
-           System.out.println("Country: " + c.getName());
+           printCountriesSurfaces(c);
            
-           Iterator it2 = c.getSurfaces().entrySet().iterator();
-           while(it2.hasNext()) {
-               Map.Entry<String, Boolean> surface = (Map.Entry) it2.next();
-               System.out.println("---" + surface.getKey());
-           }
-           
-           System.out.println();
        }
+        
+    }
+    
+    /**
+     * This method prints:
+     * - type of runways (based on surface) per country 
+     * (all countries, not just the top 10 categories) on the go.
+     * 
+     * The way this method finds the countries associated to surfaces
+     * is by going in the general direction (country, airport, runway) and 
+     * immediately printing a country with its associated runways.
+     * 
+     * There are around 250 country entries. This method will produce an
+     * acceptable solution for a theoretical time of O(x * y * z), where x are 
+     * the entries in the countries fils, y - the entries in the airports file 
+     * and z - the entries in the runways file.
+     * 
+     * Unfortunately, in practice that time is still rather long. Therefore, the 
+     * new way of constructing the method allows to print the results for a 
+     * specific country.
+     * 
+     * @param country A country name or country code of a specific country to 
+     * print the surfaces. Leave null to print for all countries
+     * (not recommended).
+     */
+    public static void printTypeOfRunwaysPerCountryForLimitedSpace(String country) {
+        
+        // Ready (open) the files to be read
+        readyFiles();
+        
+        // if the option of a specific country is used, print only its surfaces
+        if (country != null) {
+            
+            String countryCode = Query.findCountryCode(country);
+            
+            printTypeOfRunwaysPerCountryForLimitedSpaceForGivenCountry(countryCode);
+            
+            return;
+        }
+        
+        // print for all countries
+        try {
+            
+            String line1; // pointer (line reader) used with the countries
+            String line2; //pointer (line reader) used with the airports
+            String line3; //pointer (line reader) used with the runways
+            
+            /*
+            countries not listed in the countries file will not be processed
+            */
+            
+            countriesReader.readLine(); // skip first line (column names)
+            
+            while(((line1 = countriesReader.readLine()) != null) ) {
+                
+                Country c = Utils.readCountry(line1);
+                
+                // find associated airport
+                airportsReader = new BufferedReader(new FileReader("resources/airports.csv")); //reopen the airports file
+                airportsReader.readLine(); // skip first line (column names)
+                
+                while((line2 = airportsReader.readLine()) != null) {
+                    
+                    Airport a = Utils.readAirport(line2);
+                    
+                    if(c.getCode().equalsIgnoreCase(a.getCountryCode()) ) {
+                        /* 
+                        find the airport's runways and add them to the country's 
+                        surfaces
+                        */
+                        
+                        runwaysReader = new BufferedReader(new FileReader("resources/runways.csv")); //reopen the airports file
+                        runwaysReader.readLine(); // skip first line (column names)
+                        
+                        while((line3 = runwaysReader.readLine()) != null) {
+                            
+                            Runway r = Utils.readRunway(line3);
+                            
+                            if(a.getID() == r.getAirportReference()) {
+                                c.addSurface( r.getSurface() );
+                            }
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+                // print the surfaces for the country
+                printCountriesSurfaces(c);
+                
+            }
+            
+        }
+        catch(IOException ex) {
+            System.err.println("Error: "+ ex.getMessage());
+        }
+        finally {
+            // Close buffered readers
+            closeFiles();
+        }
+        
+    }
+    
+    /**
+     * This method prints:
+     * - type of runways (based on surface) for a specific country
+     * 
+     * @param code - A valid country code of a specific country. The code must 
+     * be present in the countries fiel.
+     */
+    private static void printTypeOfRunwaysPerCountryForLimitedSpaceForGivenCountry(String code) {
+        
+        try {
+            
+            String line1; //pointer (line reader) used with the countries
+            String line2; //pointer (line reader) used with the airports
+            String line3; //pointer (line reader) used with the runways
+            
+            // find the country object
+            Country c = null;
+            
+            countriesReader.readLine(); // skip first line (column names)
+            
+            while((line1 = countriesReader.readLine()) != null) {
+                
+                c = Utils.readCountry(line1);
+                
+                if(code.equalsIgnoreCase(c.getCode())) break;
+            }
+            
+            // find associated airport
+            airportsReader = new BufferedReader(new FileReader("resources/airports.csv")); //reopen the airports file
+            airportsReader.readLine(); // skip first line (column names)
+            
+            while((line2 = airportsReader.readLine()) != null) {
+                
+                Airport a = Utils.readAirport(line2);
+                
+                if(code.equalsIgnoreCase(a.getCountryCode()) ) {
+                    /* 
+                    find the airport's runways and add them to the country's 
+                    surfaces
+                    */
+                    
+                    runwaysReader = new BufferedReader(new FileReader("resources/runways.csv")); //reopen the airports file
+                    runwaysReader.readLine(); // skip first line (column names)
+                    
+                    while((line3 = runwaysReader.readLine()) != null) {
+                        
+                        Runway r = Utils.readRunway(line3);
+                        
+                        if( (a.getID() == r.getAirportReference()) && (c != null) ) {
+                            c.addSurface( r.getSurface() );
+                        }
+                        
+                    }
+                    
+                }
+                
+            }
+            
+            // print the surfaces for the country
+            printCountriesSurfaces(c);
+            
+        }
+        catch(IOException ex) {
+            System.err.println("Error: "+ ex.getMessage());
+        }
+        finally {
+            // Close buffered readers
+            closeFiles();
+        }
+        
+    }
+    
+    /**
+     * This method prints a country with its associated surfaces to the command 
+     * line in the format:
+     * 
+     * Country: name
+     * ---surface1
+     * ---surface2
+     * ---...
+     * 
+     * @param c A Country object that contains the surfaces.
+     */
+    @SuppressWarnings("unchecked")
+    private static void printCountriesSurfaces(Country c) {
+        
+        System.out.println("Country: " + c.getName());
+        
+        Iterator it2 = c.getSurfaces().entrySet().iterator();
+        while(it2.hasNext()) {
+           Map.Entry<String, Boolean> surface = (Map.Entry) it2.next();
+           System.out.println("---" + surface.getKey());
+        }
+        
+        System.out.println();
         
     }
     

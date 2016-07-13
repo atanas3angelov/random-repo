@@ -7,4 +7,4 @@ Comments:
 - The project was created in Java using the NetBeans IDE.
 - The java documentation is in the dist directory.
 - The solution uses a third-party library from commons.apache.org (:lang) to find the longest common prefix or Levenshtein distance. 
-- Unit tests at this moment (12.7) are not yet included.
+- JUnit (4.12) tests are in the test directory.

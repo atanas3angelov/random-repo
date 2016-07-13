@@ -185,8 +185,7 @@ public class Reports {
             
             while((line = airportsReader.readLine()) != null) {
                 
-                String[] arguments = line.split(",",-1);
-                Airport a = new Airport(Integer.parseInt(arguments[0]), arguments[1].replace("\"", ""), arguments[3].replace("\"", ""), arguments[8].replace("\"", ""));
+                Airport a = Utils.readAirport(line);
                 
                 // guard from inconsistent data between countries.csv and airports.csv
                 if(country_airports.containsKey(a.getCountryCode())) {
@@ -199,7 +198,7 @@ public class Reports {
                 
             }
         }
-        catch(PositiveIntegerRequiredException | IOException ex) {
+        catch(IOException ex) {
             System.err.println("Error: "+ ex.getMessage());
         }
         finally {
@@ -593,6 +592,7 @@ public class Reports {
      * Of course, one could also consider the Map-Reduce framework but that 
      * requires several machines.
      */
+    @SuppressWarnings("unchecked")
     public static void printTop10MostCommonElements() {
         
         // Ready (open) the files to be read
